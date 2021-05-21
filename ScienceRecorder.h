@@ -1,4 +1,5 @@
 #pragma once
+#pragma comment(lib, "bakkesmod.lib")
 
 #include "bakkesmod/plugin/bakkesmodplugin.h"
 #include "bakkesmod/plugin/pluginwindow.h"
@@ -13,8 +14,24 @@ class ScienceRecorder: public BakkesMod::Plugin::BakkesModPlugin/*, public Bakke
 	//std::shared_ptr<bool> enabled;
 
 	//Boilerplate
-	virtual void onLoad();
-	virtual void onUnload();
+public:
+	void onLoad() override;
+	void onUnload() override;
+
+private:
+	void pluginEnabledChanged();
+	void onPhysicsTick();
+	void onMatchStart(ServerWrapper server, void* params, std::string eventName);
+	void hookMatchStarted();
+	void unhookMatchStarted();
+
+private:
+	static constexpr const char* rankedMatchStartedEvent = "Function ";
+	static constexpr const char* tickEvent = "Function TAGame.Car_TA.SetVehicleInput";
+	static constexpr const char* enabledCvarName = "science_recorder_enabled";
+
+private:
+	bool hooked = false;
 
 	// Inherited via PluginWindow
 	/*

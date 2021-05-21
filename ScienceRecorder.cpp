@@ -11,6 +11,8 @@ void ScienceRecorder::onLoad()
 	_globalCvarManager = cvarManager;
 	//cvarManager->log("Plugin loaded!");
 
+	cvarManager->registerCvar(enabledCvarName, "0", "Determines whether Science Recorder is enabled.");
+
 	//cvarManager->registerNotifier("my_aweseome_notifier", [&](std::vector<std::string> args) {
 	//	cvarManager->log("Hello notifier!");
 	//}, "", 0);
@@ -39,10 +41,53 @@ void ScienceRecorder::onLoad()
 	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", [this](std::string eventName) {
 	//	cvarManager->log("Your hook got called and the ball went POOF");
 	//});
+
 	// You could also use std::bind here
 	//gameWrapper->HookEvent("Function TAGame.Ball_TA.Explode", std::bind(&ScienceRecorder::YourPluginMethod, this);
+	gameWrapper->HookEvent("Function TAGame.Car_TA.SetVehicleInput", std::bind(&ScienceRecorder::onPhysicsTick, this));
 }
 
 void ScienceRecorder::onUnload()
 {
+
+}
+
+void ScienceRecorder::pluginEnabledChanged()
+{
+	const bool enabled = cvarManager->getCvar(enabledCvarName).getBoolValue();
+
+	if (enabled)
+	{
+		if (!hooked)
+		{
+			hookMatchStarted();
+		}
+	}
+	else
+		if (hooked)
+		{
+			unhookMatchStarted();
+		}
+}
+
+void ScienceRecorder::onPhysicsTick()
+{
+
+}
+
+void ScienceRecorder::onMatchStart(ServerWrapper server, void* params, std::string eventName)
+{
+
+}
+
+void ScienceRecorder::hookMatchStarted()
+{
+	gameWrapper->HookEventWithCaller<ServerWrapper>(rankedMatchStartedEvent, std::bind(&ScienceRecorder::onMatchStart, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	hooked = true;
+}
+
+void ScienceRecorder::unhookMatchStarted()
+{
+	gameWrapper->UnhookEvent(rankedMatchStartedEvent);
+	hooked = false;
 }
